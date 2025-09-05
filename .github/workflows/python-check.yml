@@ -1,45 +1,27 @@
 name: Python check
 
 on:
-  pull_request:
-    branches: [ "main" ]
+  workflow_call:
+    inputs:
+      refspec:
+        description: 'Commit at which we run the test'
+        required: true
+        type: string
 
 jobs:
-  list:
-    name: "List commits in the PR"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Compute PR fetch depth
-        shell: bash
-        run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits || 1 }} + 1 ))" >> "$GITHUB_ENV"
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: "${{ env.PR_FETCH_DEPTH }}"
-
-      - name: Compute dynamic commit list
-        shell: bash
-        id: list-commits
-        run: echo "commits=$(git rev-list ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }} | jq --raw-input | jq --slurp --compact-output)" >> "$GITHUB_OUTPUT"
-
-    outputs:
-      commits: "${{ steps.list-commits.outputs.commits }}"
-
   build:
-    name: Check if every commit in the PR works
+    name: Test with python ${{ matrix.python }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: list
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-        commit: "${{fromJson(needs.list.outputs.commits)}}"
     steps:
-      - name: Checkout code at commit ${{ matrix.commit }}
+      - name: Checkout code at commit ${{ inputs.resfspec }}
         uses: actions/checkout@v4
         with:
-          ref: ${{ matrix.commit }}
+          ref: ${{ inputs.refspec }}
           fetch-depth: 1
 
       - name: Install uv
