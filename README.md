@@ -112,3 +112,5 @@ We do not (yet, coming at some point) provide a PyPi package. However, installat
 # Examples
 Running the **simple.conf** job:
 <code>python3 -m hwbench.hwbench -j configs/simple.conf -m monitoring.cfg</code>
+
+Adding text again
